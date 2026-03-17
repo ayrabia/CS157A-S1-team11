@@ -122,7 +122,7 @@ The system uses the following relational tables:
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone <https://github.com/ayrabia/CS157A-S1-team11>
    cd fithub
    ```
 
@@ -158,24 +158,7 @@ The database is pre-seeded with sample records for development and testing:
 
 ---
 
-## Project Structure
 
-```
-fithub/
-├── src/
-│   └── main/
-│       ├── java/          # Java backend logic (servlets, DAOs)
-│       └── webapp/
-│           ├── WEB-INF/   # JSP pages and web.xml config
-│           ├── css/       # Stylesheets
-│           └── js/        # Frontend scripts
-├── sql/
-│   ├── schema.sql         # Table creation scripts
-│   └── seed.sql           # Sample data inserts
-└── README.md
-```
-
----
 
 ## Authors
 
@@ -185,4 +168,3 @@ fithub/
 | Rachel Tran | rachel.n.tran@sjsu.edu |
 | Minh Trinh | minh.trinh@sjsu.edu |
 
-*CS157A — Database Management Systems, San José State University*
