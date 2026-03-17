@@ -45,8 +45,7 @@ FitHub is a web-based gym management system designed to centralize and streamlin
 | Web Server | Apache Tomcat 9.0.105 |
 | Database | MySQL Community Server 8.0.42 |
 | DB Tool | MySQL Workbench 8.0.42 |
-| IDE | IntelliJ IDEA |
-| OS | Windows 11 |
+
 
 ---
 
