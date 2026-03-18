@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitHub — Gym Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #f5f2ec;
+      --accent: #e8ff3a;
+      --gray: #1c1c1c;
+      --mid: #3a3a3a;
+      --text-muted: #888;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.2rem 3rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      background: rgba(10,10,10,0.85);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none;
+      font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta {
+      background: var(--accent); color: var(--black);
+      border: none; padding: 0.55rem 1.4rem;
+      font-family: 'DM Sans', sans-serif; font-weight: 500;
+      font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: grid; grid-template-columns: 1fr 1fr; align-items: center;
+      padding: 8rem 3rem 4rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -20%; right: -10%;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(232,255,58,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); border: 1px solid var(--accent);
+      padding: 0.3rem 0.8rem; margin-bottom: 1.5rem;
+      opacity: 0; animation: fadeUp 0.6s 0.2s forwards;
+    }
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4.5rem, 8vw, 8rem);
+      line-height: 0.95; letter-spacing: 0.02em;
+      opacity: 0; animation: fadeUp 0.7s 0.35s forwards;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero-sub {
+      margin-top: 1.8rem;
+      font-size: 1.1rem; line-height: 1.7; color: var(--text-muted); max-width: 440px;
+      opacity: 0; animation: fadeUp 0.7s 0.5s forwards;
+    }
+    .hero-btns {
+      display: flex; gap: 1rem; margin-top: 2.5rem;
+      opacity: 0; animation: fadeUp 0.7s 0.65s forwards;
+    }
+    .btn-primary {
+      background: var(--accent); color: var(--black);
+      border: none; padding: 0.8rem 2rem;
+      font-family: 'DM Sans', sans-serif; font-weight: 500;
+      font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;
+      cursor: pointer; transition: opacity 0.2s; text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-outline {
+      background: transparent; color: var(--white);
+      border: 1px solid rgba(255,255,255,0.25); padding: 0.8rem 2rem;
+      font-family: 'DM Sans', sans-serif; font-weight: 400;
+      font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;
+      cursor: pointer; transition: border-color 0.2s; text-decoration: none;
+      display: inline-block;
+    }
+    .btn-outline:hover { border-color: var(--white); }
+
+    /* HERO VISUAL */
+    .hero-visual {
+      display: flex; justify-content: flex-end; align-items: center;
+      opacity: 0; animation: fadeIn 1s 0.7s forwards;
+    }
+    .stat-card-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+      max-width: 380px; width: 100%;
+    }
+    .stat-card {
+      background: var(--gray); border: 1px solid rgba(255,255,255,0.06);
+      padding: 1.5rem; position: relative; overflow: hidden;
+    }
+    .stat-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 2px; background: var(--accent);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.3s;
+    }
+    .stat-card:hover::after { transform: scaleX(1); }
+    .stat-card.wide { grid-column: span 2; }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem; color: var(--accent); line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.8rem; color: var(--text-muted);
+      letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.4rem;
+    }
+    .stat-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.75rem; color: var(--accent);
+      background: rgba(232,255,58,0.1); padding: 0.3rem 0.7rem; margin-top: 0.6rem;
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+    /* DIVIDER */
+    .section-divider {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0 3rem; margin: 2rem 0;
+    }
+    .section-divider::before, .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08);
+    }
+    .section-divider span {
+      font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted);
+    }
+
+    /* FEATURES */
+    .features {
+      padding: 5rem 3rem;
+    }
+    .section-header { margin-bottom: 3.5rem; }
+    .section-eyebrow {
+      font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 0.8rem;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 4vw, 4rem); line-height: 1;
+    }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+      background: rgba(255,255,255,0.06);
+    }
+    .feature-item {
+      background: var(--black); padding: 2.5rem 2rem;
+      transition: background 0.3s;
+    }
+    .feature-item:hover { background: var(--gray); }
+    .feature-icon {
+      font-size: 1.8rem; margin-bottom: 1rem;
+    }
+    .feature-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem; letter-spacing: 0.04em; margin-bottom: 0.6rem;
+    }
+    .feature-desc {
+      font-size: 0.9rem; color: var(--text-muted); line-height: 1.65;
+    }
+
+    /* ROLES */
+    .roles { padding: 5rem 3rem; }
+    .roles-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .role-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 2rem; position: relative; overflow: hidden;
+    }
+    .role-card::before {
+      content: attr(data-role);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 6rem; letter-spacing: -0.02em;
+      position: absolute; right: -0.5rem; top: -0.5rem;
+      color: rgba(255,255,255,0.03); line-height: 1;
+      pointer-events: none;
+    }
+    .role-tag {
+      font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+      background: rgba(232,255,58,0.12); color: var(--accent);
+      padding: 0.25rem 0.6rem; display: inline-block; margin-bottom: 1rem;
+    }
+    .role-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem; margin-bottom: 1rem;
+    }
+    .role-list { list-style: none; }
+    .role-list li {
+      font-size: 0.88rem; color: var(--text-muted);
+      padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .role-list li::before { content: '—'; color: var(--accent); font-size: 0.7rem; }
+
+    /* TECH STACK */
+    .tech { padding: 5rem 3rem; }
+    .tech-row {
+      display: flex; gap: 1px; background: rgba(255,255,255,0.06);
+      margin-top: 3rem; flex-wrap: wrap;
+    }
+    .tech-item {
+      background: var(--black); flex: 1; min-width: 150px;
+      padding: 2rem 1.5rem; text-align: center;
+      transition: background 0.25s;
+    }
+    .tech-item:hover { background: var(--gray); }
+    .tech-layer {
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 0.5rem;
+    }
+    .tech-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem; letter-spacing: 0.04em;
+    }
+
+    /* TEAM */
+    .team { padding: 5rem 3rem; }
+    .team-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .team-card {
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 2rem; text-align: center;
+    }
+    .team-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--mid); margin: 0 auto 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--accent);
+    }
+    .team-name {
+      font-weight: 500; font-size: 1rem; margin-bottom: 0.25rem;
+    }
+    .team-email {
+      font-size: 0.8rem; color: var(--text-muted);
+    }
+    .team-school {
+      font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 2rem 3rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--accent);
+    }
+    .footer-meta {
+      font-size: 0.8rem; color: var(--text-muted);
+    }
+    .footer-course {
+      font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+
+    /* SCROLL REVEAL */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 3rem; }
+      .hero-visual { display: none; }
+      .features-grid, .roles-grid, .team-grid { grid-template-columns: 1fr; }
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .features, .roles, .tech, .team { padding: 4rem 1.5rem; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">FitHub</div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#roles">Access</a></li>
+    <li><a href="#tech">Tech</a></li>
+    <li><a href="#team">Team</a></li>
+  </ul>
+  <a href="http://localhost:8080/fithub" class="nav-cta">Launch App</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-tag">CS157A · Group 11 · SJSU</div>
+    <h1>Gym<br/><span>Management</span><br/>Simplified.</h1>
+    <p class="hero-sub">
+      FitHub is a web-based gym management system that centralizes member accounts, class enrollment, attendance tracking, and payment processing — all in one place.
+    </p>
+    <div class="hero-btns">
+      <a href="http://localhost:8080/fithub" class="btn-primary">Launch App</a>
+      <a href="#features" class="btn-outline">Explore Features</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="stat-card-grid">
+      <div class="stat-card">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Access Roles</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Fitness Classes</div>
+      </div>
+      <div class="stat-card wide">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Fitness Classes Available</div>
+        <div class="stat-badge"><span class="dot"></span>Waitlist Supported</div>
+      </div>
+      <div class="stat-card wide" style="background: var(--gray);">
+        <div style="font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); margin-bottom:0.5rem;">Stack</div>
+        <div style="font-size:0.9rem; color: var(--text-muted);">Java · JSP · MySQL · Apache Tomcat</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"><span>Platform Overview</span></div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-header reveal">
+    <div class="section-eyebrow">Core Features</div>
+    <div class="section-title">Everything a Gym Needs</div>
+  </div>
+  <div class="features-grid reveal">
+    <div class="feature-item">
+      <div class="feature-icon">👤</div>
+      <div class="feature-title">Member Accounts</div>
+      <div class="feature-desc">Members register, manage their profiles, view membership status (Active / Frozen / Expired), and track their activity — all from a single portal.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">📅</div>
+      <div class="feature-title">Class Enrollment</div>
+      <div class="feature-desc">Browse and enroll in fitness classes. Automatic waitlist management kicks in when capacity is full, with seamless cancellation support.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">✅</div>
+      <div class="feature-title">Attendance Tracking</div>
+      <div class="feature-desc">Staff check members in and out at the door. Every visit is logged with timestamps, including class-linked attendance for detailed history.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">💳</div>
+      <div class="feature-title">Payment Processing</div>
+      <div class="feature-desc">Record and track membership payments tied to plans. Supports Student Semester and VIP Access tiers with full transaction history.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🏋️</div>
+      <div class="feature-title">Trainer Management</div>
+      <div class="feature-desc">Assign certified trainers to classes. Track specializations like CrossFit and Martial Arts with a Staff subclass model in the database.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🔐</div>
+      <div class="feature-title">Secure by Design</div>
+      <div class="feature-desc">Passwords stored as cryptographic hashes. HTTPS enforced. SQL injection prevention with input validation and role-based access control throughout.</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"><span>Access Control</span></div>
+
+<!-- ROLES -->
+<section class="roles" id="roles">
+  <div class="section-header reveal">
+    <div class="section-eyebrow">Role-Based Access</div>
+    <div class="section-title">Right Access,<br/>Right Role</div>
+  </div>
+  <div class="roles-grid">
+    <div class="role-card reveal" data-role="M">
+      <div class="role-tag">Tier 1</div>
+      <div class="role-title">Member</div>
+      <ul class="role-list">
+        <li>View &amp; edit own profile</li>
+        <li>Manage class enrollment</li>
+        <li>View membership &amp; plan</li>
+        <li>Check own attendance history</li>
+      </ul>
+    </div>
+    <div class="role-card reveal" data-role="S">
+      <div class="role-tag">Tier 2</div>
+      <div class="role-title">Staff</div>
+      <ul class="role-list">
+        <li>Manage member accounts</li>
+        <li>Create &amp; manage classes</li>
+        <li>Record payments</li>
+        <li>Check in members</li>
+        <li>Manage membership plans</li>
+      </ul>
+    </div>
+    <div class="role-card reveal" data-role="A" style="border-color: rgba(232,255,58,0.2);">
+      <div class="role-tag" style="background:rgba(232,255,58,0.2)">Tier 3</div>
+      <div class="role-title" style="color:var(--accent)">Administrator</div>
+      <ul class="role-list">
+        <li>All staff capabilities</li>
+        <li>Reset staff passwords</li>
+        <li>Change staff roles</li>
+        <li>Delete staff accounts</li>
+        <li>Override membership statuses</li>
+        <li>Access all system records</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"><span>System Architecture</span></div>
+
+<!-- TECH STACK -->
+<section class="tech" id="tech">
+  <div class="section-header reveal">
+    <div class="section-eyebrow">Tech Stack</div>
+    <div class="section-title">Three-Tier Architecture</div>
+  </div>
+
+  <div style="margin-top:2.5rem; margin-bottom:3rem;" class="reveal">
+    <div style="display:flex; align-items:center; gap:0; flex-wrap:wrap;">
+      <div style="background:var(--gray); border:1px solid rgba(255,255,255,0.08); padding:1.2rem 1.8rem; font-size:0.85rem; color:var(--text-muted);">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.1rem; color:var(--white)">Browser Client</div>
+        <div>HTML · CSS · JS</div>
+      </div>
+      <div style="padding:0 0.8rem; color:var(--accent); font-family:'Bebas Neue',sans-serif; font-size:1.5rem;">→</div>
+      <div style="background:var(--gray); border:1px solid rgba(255,255,255,0.08); padding:1.2rem 1.8rem; font-size:0.85rem; color:var(--text-muted);">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.1rem; color:var(--white)">Web Server</div>
+        <div>Apache Tomcat · Java · JSP</div>
+      </div>
+      <div style="padding:0 0.8rem; color:var(--accent); font-family:'Bebas Neue',sans-serif; font-size:1.5rem;">→</div>
+      <div style="background:var(--gray); border:1px solid rgba(255,255,255,0.08); padding:1.2rem 1.8rem; font-size:0.85rem; color:var(--text-muted);">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:1.1rem; color:var(--white)">Database</div>
+        <div>MySQL 8.0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tech-row reveal">
+    <div class="tech-item">
+      <div class="tech-layer">Frontend</div>
+      <div class="tech-name">HTML / CSS / JS</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-layer">Backend</div>
+      <div class="tech-name">Java · JSP</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-layer">Web Server</div>
+      <div class="tech-name">Apache Tomcat 9</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-layer">Database</div>
+      <div class="tech-name">MySQL 8.0.42</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-layer">DB Tool</div>
+      <div class="tech-name">MySQL Workbench</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"><span>The Team</span></div>
+
+<!-- TEAM -->
+<section class="team" id="team">
+  <div class="section-header reveal">
+    <div class="section-eyebrow">Group 11</div>
+    <div class="section-title">Built by SJSU Students</div>
+  </div>
+  <div class="team-grid">
+    <div class="team-card reveal">
+      <div class="team-avatar">AR</div>
+      <div class="team-name">Ayman Rabia</div>
+      <div class="team-email">ayman.rabia@sjsu.edu</div>
+      <div class="team-school">San José State University</div>
+    </div>
+    <div class="team-card reveal">
+      <div class="team-avatar">RT</div>
+      <div class="team-name">Rachel Tran</div>
+      <div class="team-email">rachel.n.tran@sjsu.edu</div>
+      <div class="team-school">San José State University</div>
+    </div>
+    <div class="team-card reveal">
+      <div class="team-avatar">MT</div>
+      <div class="team-name">Minh Trinh</div>
+      <div class="team-email">minh.trinh@sjsu.edu</div>
+      <div class="team-school">San José State University</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">FitHub</div>
+  <div class="footer-meta">CS157A · Database Management Systems · Group 11</div>
+  <div class="footer-course">San José State University</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
