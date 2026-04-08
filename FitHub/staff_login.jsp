@@ -1,108 +1,63 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page session="true" %>
+<%
+    String error = "";
+    if ("POST".equalsIgnoreCase(request.getMethod())) {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        Connection conn = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
+
+            String sql = "SELECT staff_id, first_name, role FROM Staff WHERE username = ? AND password_hash = ? AND status = 'Active'";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, username);
+            ps.setString(2, password);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                session.setAttribute("staff_id", rs.getInt("staff_id"));
+                session.setAttribute("staff_name", rs.getString("first_name"));
+                session.setAttribute("staff_role", rs.getString("role"));
+                response.sendRedirect("staff_dashboard.jsp");
+                return;
+            } else {
+                error = "Invalid credentials or inactive account.";
+            }
+        } catch (Exception e) {
+            error = "Database error: " + e.getMessage();
+        } finally {
+            if (conn != null) try { conn.close(); } catch (SQLException e) {}
+        }
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Login - FitHub</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .login-container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        .login-container h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #4CAF50;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .btn:hover {
-            background-color: #45a049;
-        }
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .back-link a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-        .error-message {
-            color: red;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Staff Login - FitHub</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #1a1a1a; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    h2 { color: #e8ff3a; }
+    form { display: flex; flex-direction: column; gap: 12px; width: 300px; }
+    input { padding: 10px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff; font-size: 1rem; }
+    button { padding: 10px; background: #e8ff3a; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+    .error { color: #ff4444; }
+    a { color: #e8ff3a; }
+  </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Staff Login</h2>
-
-        <%-- Display error message if login fails --%>
-        <% String error = request.getParameter("error");
-           if (error != null && error.equals("1")) { %>
-            <div class="error-message">Invalid username or password. Please try again.</div>
-        <% } %>
-
-        <form action="staff_dashboard.jsp" method="post">
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-
-            <button type="submit" class="btn">Login</button>
-        </form>
-
-        <div class="back-link">
-            <a href="index.html">← Back to Home</a>
-        </div>
-    </div>
+  <h2>Staff Login</h2>
+  <% if (!error.isEmpty()) { %><p class="error"><%= error %></p><% } %>
+  <form method="post">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+  </form>
+  <br>
+  <p><a href="index.html">Back</a></p>
 </body>
 </html>
