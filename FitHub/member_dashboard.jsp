@@ -1,104 +1,70 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page session="true" %>
+<%
+    Integer memberId = (Integer) session.getAttribute("member_id");
+    String firstName = (String) session.getAttribute("first_name");
+    if (memberId == null) {
+        response.sendRedirect("member_login.jsp");
+        return;
+    }
+
+    // Fetch membership info
+    String planName = "N/A", startDate = "N/A", endDate = "N/A", membershipStatus = "N/A";
+    Connection conn = null;
+    try {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        conn = DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
+
+        String sql = "SELECT M.status, M.start_date, M.end_date, P.plan_name " +
+                     "FROM Membership M, Membership_Plan P " +
+                     "WHERE M.plan_id = P.plan_id AND M.member_id = ?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, memberId);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            membershipStatus = rs.getString("status");
+            startDate        = rs.getString("start_date");
+            endDate          = rs.getString("end_date");
+            planName         = rs.getString("plan_name");
+        }
+    } catch (Exception e) {
+        membershipStatus = "Error: " + e.getMessage();
+    } finally {
+        if (conn != null) try { conn.close(); } catch (SQLException e) {}
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Dashboard - FitHub</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        header {
-            background-color: #4CAF50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        .card {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .card h3 {
-            color: #4CAF50;
-            margin-top: 0;
-        }
-        .logout-btn {
-            background-color: #f44336;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            float: right;
-            margin-top: -10px;
-        }
-        .logout-btn:hover {
-            background-color: #d32f2f;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Member Dashboard - FitHub</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #1a1a1a; color: #fff; margin: 0; padding: 2rem; }
+    h1 { color: #e8ff3a; }
+    .card { background: #2a2a2a; border-radius: 10px; padding: 1.5rem; max-width: 500px; margin-bottom: 1.5rem; }
+    .card h3 { color: #e8ff3a; margin-top: 0; }
+    .label { color: #aaa; font-size: 0.9rem; }
+    .value { font-size: 1.1rem; margin-bottom: 0.8rem; }
+    a.btn { display: inline-block; margin-top: 1rem; padding: 10px 24px; background: #e8ff3a; color: #000; font-weight: bold; border-radius: 6px; text-decoration: none; }
+    a.logout { color: #ff6666; text-decoration: none; font-size: 0.9rem; }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Member Dashboard</h1>
-        <a href="index.html" class="logout-btn">Logout</a>
-    </header>
+  <h1>Welcome, <%= firstName %>!</h1>
 
-    <div class="container">
-        <h2>Welcome, Member!</h2>
-        <p>This is your personal dashboard. Here you can manage your gym activities.</p>
+  <div class="card">
+    <h3>Membership Status</h3>
+    <div class="label">Plan</div>
+    <div class="value"><%= planName %></div>
+    <div class="label">Status</div>
+    <div class="value"><%= membershipStatus %></div>
+    <div class="label">Start Date</div>
+    <div class="value"><%= startDate %></div>
+    <div class="label">End Date</div>
+    <div class="value"><%= endDate %></div>
+  </div>
 
-        <div class="dashboard-grid">
-            <div class="card">
-                <h3>Membership Status</h3>
-                <p>View your current membership plan and status.</p>
-                <p><strong>Status:</strong> Active</p>
-                <p><strong>Plan:</strong> Premium Monthly</p>
-                <p><strong>Expires:</strong> 2026-04-15</p>
-            </div>
-
-            <div class="card">
-                <h3>Class Enrollment</h3>
-                <p>Enroll in or manage your fitness classes.</p>
-                <ul>
-                    <li>Yoga Class - Monday 9:00 AM</li>
-                    <li>HIIT Training - Wednesday 6:00 PM</li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <h3>Attendance History</h3>
-                <p>View your check-in and check-out history.</p>
-                <ul>
-                    <li>Yoga - 2026-03-10: 8:45 AM - 10:00 AM</li>
-                    <li>HIIT - 2026-03-12: 5:50 PM - 7:00 PM</li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <h3>Payment History</h3>
-                <p>View your payment records.</p>
-                <ul>
-                    <li>$49.99 - March 1, 2026 - Completed</li>
-                    <li>$49.99 - February 1, 2026 - Completed</li>
-                </ul>
-            </div>
-        </div>
-    </div>
+  <a href="logout.jsp" class="logout">Logout</a>
 </body>
 </html>
