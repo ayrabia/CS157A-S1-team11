@@ -1,6 +1,8 @@
 <%@ page import="java.sql.*" %>
 <%@ page session="true" %>
 <%
+    // Member dashboard: session guard ensures only logged-in members can access.
+    // Fetches the member's current membership plan and status from the database.
     Integer memberId = (Integer) session.getAttribute("member_id");
     String firstName = (String) session.getAttribute("first_name");
     if (memberId == null) {
@@ -8,13 +10,13 @@
         return;
     }
 
-    // Fetch membership info
+    // Join Membership and Membership_Plan to display full subscription details
     String planName = "N/A", startDate = "N/A", endDate = "N/A", membershipStatus = "N/A";
     Connection conn = null;
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
         conn = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
+            "jdbc:mysql://localhost:3306/group11", "root", "");
 
         String sql = "SELECT M.status, M.start_date, M.end_date, P.plan_name " +
                      "FROM Membership M, Membership_Plan P " +
@@ -66,5 +68,7 @@
   </div>
 
   <a href="logout.jsp" class="logout">Logout</a>
+  &nbsp;&nbsp;
+  <a href="delete_account.jsp" class="logout">Delete Account</a>
 </body>
 </html>

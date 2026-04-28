@@ -1,5 +1,7 @@
 <%@ page session="true" %>
 <%
+    // Staff dashboard: session guard redirects unauthenticated users to login.
+    // Displays navigation cards for all staff functions; role is shown for context.
     String staffName = (String) session.getAttribute("staff_name");
     String staffRole = (String) session.getAttribute("staff_role");
     if (staffName == null) {
@@ -36,6 +38,16 @@
       <h3>Process Payment</h3>
       <p>Record a membership payment</p>
       <a class="btn" href="process_payment.jsp">Payment</a>
+    </div>
+    <div class="card">
+      <h3>Manage Members</h3>
+      <p>Register, freeze, or reactivate member accounts</p>
+      <a class="btn" href="manage_members.jsp">Members</a>
+    </div>
+    <div class="card">
+      <h3>Membership Plans</h3>
+      <p>Add, update, or deactivate membership plans</p>
+      <a class="btn" href="manage_plans.jsp">Plans</a>
     </div>
   </div>
 
