@@ -38,6 +38,41 @@
                 message = rows > 0 ? "Account reactivated." : "Account is already active or not found.";
                 messageType = rows > 0 ? "success" : "error";
 
+            } else if ("assign_membership".equals(action)) {
+                // Assign a membership plan to a member who has no active membership
+                int memberId = Integer.parseInt(request.getParameter("member_id"));
+                int planId   = Integer.parseInt(request.getParameter("plan_id"));
+
+                // Look up the plan duration so we can calculate the end date
+                PreparedStatement planPs = conn.prepareStatement(
+                    "SELECT duration_months FROM Membership_Plan WHERE plan_id = ?");
+                planPs.setInt(1, planId);
+                ResultSet planRs = planPs.executeQuery();
+                planRs.next();
+                int duration = planRs.getInt("duration_months");
+                planRs.close(); planPs.close();
+
+                // Generate next membership_id manually since there is no AUTO_INCREMENT
+                ResultSet idRs = conn.prepareStatement(
+                    "SELECT COALESCE(MAX(membership_id), 0) + 1 AS next_id FROM Membership"
+                ).executeQuery();
+                idRs.next();
+                int nextMembershipId = idRs.getInt("next_id");
+                idRs.close();
+
+                PreparedStatement assignPs = conn.prepareStatement(
+                    "INSERT INTO Membership (membership_id, member_id, plan_id, start_date, end_date, status, freeze_flag) " +
+                    "VALUES (?, ?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? MONTH), 'Active', 'No')");
+                assignPs.setInt(1, nextMembershipId);
+                assignPs.setInt(2, memberId);
+                assignPs.setInt(3, planId);
+                assignPs.setInt(4, duration);
+                assignPs.executeUpdate();
+                assignPs.close();
+
+                message = "Membership assigned successfully (ID: " + nextMembershipId + ").";
+                messageType = "success";
+
             } else if ("walkin".equals(action)) {
                 // Walk-in registration: staff creates a member account on the spot
                 String username = request.getParameter("username");
@@ -86,6 +121,18 @@
             "   AND ms.membership_id = (SELECT MAX(membership_id) FROM Membership WHERE member_id = m.member_id) " +
             "ORDER BY m.member_id"
         ).executeQuery();
+
+        // Load active plans for the assign membership dropdown
+        ResultSet plans = conn.prepareStatement(
+            "SELECT plan_id, plan_name, price, duration_months FROM Membership_Plan WHERE is_active = 'Yes' ORDER BY plan_name"
+        ).executeQuery();
+        java.util.List<int[]> planIds = new java.util.ArrayList<>();
+        java.util.List<String> planLabels = new java.util.ArrayList<>();
+        while (plans.next()) {
+            planIds.add(new int[]{ plans.getInt("plan_id") });
+            planLabels.add(plans.getString("plan_name") + " ($" + plans.getInt("price") + " / " + plans.getInt("duration_months") + " mo)");
+        }
+        plans.close();
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -168,6 +215,19 @@
           </form>
         <% } else { %>
           <span class="ms-none">—</span>
+        <% } %>
+        <% if ("No Membership".equals(membershipStatus)) { %>
+          <!-- Assign Membership: only shown for members with no active membership plan -->
+          <form class="inline" method="post" style="margin-top:6px; display:block;">
+            <input type="hidden" name="action"    value="assign_membership">
+            <input type="hidden" name="member_id" value="<%= memberId %>">
+            <select name="plan_id" style="padding:4px; border-radius:4px; background:#333; color:#fff; border:1px solid #555; font-size:0.85rem;">
+              <% for (int i = 0; i < planIds.size(); i++) { %>
+                <option value="<%= planIds.get(i)[0] %>"><%= planLabels.get(i) %></option>
+              <% } %>
+            </select>
+            <button class="btn-yellow" type="submit" style="margin-top:4px;">Assign Plan</button>
+          </form>
         <% } %>
       </td>
     </tr>
