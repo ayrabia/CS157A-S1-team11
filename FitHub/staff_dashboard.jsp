@@ -35,11 +35,6 @@
       <a class="btn" href="checkin.jsp">Check In</a>
     </div>
     <div class="card">
-      <h3>Process Payment</h3>
-      <p>Record a membership payment</p>
-      <a class="btn" href="process_payment.jsp">Payment</a>
-    </div>
-    <div class="card">
       <h3>Manage Members</h3>
       <p>Register, freeze, or reactivate member accounts</p>
       <a class="btn" href="manage_members.jsp">Members</a>
