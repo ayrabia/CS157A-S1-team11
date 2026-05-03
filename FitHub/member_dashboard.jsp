@@ -16,7 +16,7 @@
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
         conn = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/group11", "root", "");
+            "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
 
         String sql = "SELECT M.status, M.start_date, M.end_date, P.plan_name " +
                      "FROM Membership M, Membership_Plan P " +

@@ -19,7 +19,7 @@
         Class.forName("com.mysql.cj.jdbc.Driver");
 
         // Open database connection
-        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/group11", "root", "");
+        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
 
         // Handle form submissions
         if ("POST".equalsIgnoreCase(request.getMethod())) {

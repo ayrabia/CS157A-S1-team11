@@ -16,7 +16,7 @@
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
         conn = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/group11", "root", "");
+            "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
 
         String action = request.getParameter("action");
         String classIdParam = request.getParameter("class_id");
