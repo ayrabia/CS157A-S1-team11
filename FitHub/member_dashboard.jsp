@@ -1,3 +1,4 @@
+<%@ include file="header.jsp" %>
 <%@ page import="java.sql.*" %>
 <%@ page session="true" %>
 <%
@@ -126,8 +127,40 @@
     <a href="member_classes.jsp" class="btn">Manage Classes</a>
   </div>
 
+  <div class="card">
+    <h2>Find a gym</h2>
+    <p class="muted">Find a gym near you.</p>
+
+    <a class="btn btn-outline" href="find_gym.jsp">Find a Gym</a>
+  </div>
+
   <a href="logout.jsp" class="logout">Logout</a>
   &nbsp;&nbsp;
   <a href="delete_account.jsp" class="logout">Delete Account</a>
+
+<script>
+function refreshRealtimeSections() {
+    fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const newDoc = parser.parseFromString(html, "text/html");
+
+            document.querySelectorAll("[data-realtime]").forEach(section => {
+                const id = section.id;
+                const newSection = newDoc.getElementById(id);
+
+                if (newSection) {
+                    section.innerHTML = newSection.innerHTML;
+                }
+            });
+        })
+        .catch(error => console.log("Realtime update failed:", error));
+}
+
+// refresh every 5 seconds
+setInterval(refreshRealtimeSections, 5000);
+</script>
+
 </body>
 </html>
