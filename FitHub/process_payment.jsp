@@ -22,12 +22,33 @@
         try {
             int memberId = Integer.parseInt(request.getParameter("member_id"));
             int membershipId = Integer.parseInt(request.getParameter("membership_id"));
-            int amount = Integer.parseInt(request.getParameter("amount"));
             String method = request.getParameter("payment_method");
+
+            int amount = 0;
 
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
+                "jdbc:mysql://localhost:3306/group11", "root", "YoUR_PASSWORD_HERE");
+
+            PreparedStatement amountPs = conn.prepareStatement(
+                "SELECT mp.price " +
+                "FROM Membership m " +
+                "JOIN Membership_Plan mp ON m.plan_id = mp.plan_id " +
+                "WHERE m.membership_id = ? AND m.member_id = ?"
+            );
+            amountPs.setInt(1, membershipId);
+            amountPs.setInt(2, memberId);
+            ResultSet amountRs = amountPs.executeQuery();
+
+            if (amountRs.next()) {
+                amount = amountRs.getInt("price");
+            } else {
+                throw new Exception("Could not find membership plan price.");
+            }
+
+            amountRs.close();
+            amountPs.close();
+
 
             // ACID transaction starts here
             conn.setAutoCommit(false);
@@ -128,13 +149,57 @@
   <form method="post">
     <input type="number" name="member_id" value="<%= prefillMemberId %>" placeholder="Member ID" required>
     <input type="number" name="membership_id" value="<%= prefillMembershipId %>" placeholder="Membership ID" required>
-    <input type="number" name="amount" placeholder="Amount ($)" required>
-
+    
     <select name="payment_method" required>
       <option value="Credit Card">Credit Card</option>
       <option value="Debit Card">Debit Card</option>
       <option value="Cash">Cash</option>
     </select>
+    <%
+        String displayAmount = "";
+        String displayPlan = "";
+        String displayName = "";
+
+        if (!prefillMemberId.equals("") && !prefillMembershipId.equals("")) {
+            Connection displayConn = null;
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                displayConn = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/group11", "root", "Ducducdn2003@");
+
+                PreparedStatement displayPs = displayConn.prepareStatement(
+                    "SELECT mp.plan_name, mp.price, mem.first_name, mem.last_name " +
+                    "FROM Membership m " +
+                    "JOIN Membership_Plan mp ON m.plan_id = mp.plan_id " +
+                    "JOIN Members mem ON m.member_id = mem.member_id " +
+                    "WHERE m.membership_id = ? AND m.member_id = ?"
+                );
+                displayPs.setInt(1, Integer.parseInt(prefillMembershipId));
+                displayPs.setInt(2, Integer.parseInt(prefillMemberId));
+
+                ResultSet displayRs = displayPs.executeQuery();
+
+                if (displayRs.next()) {
+                    displayPlan = displayRs.getString("plan_name");
+                    displayAmount = String.valueOf(displayRs.getInt("price"));
+                    displayName = displayRs.getString("first_name") + " " + displayRs.getString("last_name");
+                }
+
+                displayRs.close();
+                displayPs.close();
+            } catch (Exception e) {
+                displayAmount = "";
+            } finally {
+                if (displayConn != null) try { displayConn.close(); } catch (Exception e) {}
+            }
+        }
+    %>
+
+<p>
+    Member: <strong><%= displayName %></strong><br>
+    Plan: <strong><%= displayPlan %></strong><br>
+    Amount Due: <strong>$<%= displayAmount %></strong>
+</p>
 
     <button type="submit">Complete Payment</button>
   </form>

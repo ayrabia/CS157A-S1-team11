@@ -112,6 +112,66 @@
                     return;
                 }
 
+            } else if ("pay_membership".equals(action)) {
+
+                int memberId = Integer.parseInt(request.getParameter("member_id"));
+                int planId   = Integer.parseInt(request.getParameter("plan_id"));
+
+                PreparedStatement planPs = conn.prepareStatement(
+                    "SELECT duration_months FROM Membership_Plan WHERE plan_id = ? AND is_active = 'Yes'"
+                );
+                planPs.setInt(1, planId);
+                ResultSet planRs = planPs.executeQuery();
+
+                if (planRs.next()) {
+                    int duration = planRs.getInt("duration_months");
+
+                    // check if pending membership exists
+                    PreparedStatement checkPs = conn.prepareStatement(
+                        "SELECT membership_id FROM Membership WHERE member_id = ? AND status = 'Pending' ORDER BY membership_id DESC LIMIT 1"
+                    );
+                    checkPs.setInt(1, memberId);
+                    ResultSet checkRs = checkPs.executeQuery();
+
+                    int membershipId;
+
+                    if (checkRs.next()) {
+                        // UPDATE existing pending membership
+                        membershipId = checkRs.getInt("membership_id");
+
+                        PreparedStatement updatePs = conn.prepareStatement(
+                            "UPDATE Membership SET plan_id = ?, start_date = CURDATE(), " +
+                            "end_date = DATE_ADD(CURDATE(), INTERVAL ? MONTH) " +
+                            "WHERE membership_id = ?"
+                        );
+                        updatePs.setInt(1, planId);
+                        updatePs.setInt(2, duration);
+                        updatePs.setInt(3, membershipId);
+                        updatePs.executeUpdate();
+
+                    } else {
+                        // CREATE new pending membership (same as your assign logic)
+                        ResultSet idRs = conn.prepareStatement(
+                            "SELECT COALESCE(MAX(membership_id), 0) + 1 AS next_id FROM Membership"
+                        ).executeQuery();
+                        idRs.next();
+                        membershipId = idRs.getInt("next_id");
+
+                        PreparedStatement insertPs = conn.prepareStatement(
+                            "INSERT INTO Membership (membership_id, member_id, plan_id, start_date, end_date, status, freeze_flag) " +
+                            "VALUES (?, ?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? MONTH), 'Pending', 'No')"
+                        );
+                        insertPs.setInt(1, membershipId);
+                        insertPs.setInt(2, memberId);
+                        insertPs.setInt(3, planId);
+                        insertPs.setInt(4, duration);
+                        insertPs.executeUpdate();
+                    }
+
+                    // redirect to payment page
+                    response.sendRedirect("process_payment.jsp?member_id=" + memberId + "&membership_id=" + membershipId);
+                    return;
+                }
             } else if ("walkin".equals(action)) {
                 // Walk-in registration: staff creates a member account on the spot
                 String username = request.getParameter("username");
@@ -245,10 +305,22 @@
         <% if ("Pending".equalsIgnoreCase(membershipStatus)) { %>
 
             <!-- PAY NOW BUTTON -->
-            <form class="inline" method="get" action="process_payment.jsp">
+            <form class="inline" method="post" style="margin-top:6px; display:block;">
+                <input type="hidden" name="action" value="pay_membership">
                 <input type="hidden" name="member_id" value="<%= memberId %>">
                 <input type="hidden" name="membership_id" value="<%= membershipId %>">
-                <button class="btn-yellow" type="submit">Pay Now</button>
+
+                <select name="plan_id" style="padding:4px; border-radius:4px;">
+                    <% for (int i = 0; i < planIds.size(); i++) { %>
+                        <option value="<%= planIds.get(i)[0] %>">
+                            <%= planLabels.get(i) %>
+                        </option>
+                    <% } %>
+                </select>
+
+                <button class="btn-yellow" type="submit" style="margin-top:4px;">
+                    <%= "Pending".equalsIgnoreCase(membershipStatus) ? "Pay Now" : "Pay" %>
+                </button>
             </form>
 
         <% } else if (isActive) { %>
@@ -289,7 +361,7 @@
                 </select>
 
                 <button class="btn-yellow" type="submit" style="margin-top:4px;">
-                    Assign Plan
+                    Pay
                 </button>
             </form>
 
