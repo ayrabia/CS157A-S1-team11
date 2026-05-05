@@ -7,10 +7,12 @@ INSERT INTO `group11`.`Gym` VALUES
 ('FitHub Bay Area', '1200 Shoreline Blvd, Mountain View, CA', '6:00 AM - 10:00 PM'),
 ('FitHub Express', '300 QuickFit Lane, Fremont, CA', '24 Hours'),
 ('FitHub Central', '1500 Downtown Ave, San Jose, CA', '6:00 AM - 9:00 PM');
+
+INSERT INTO `group11`.`Admin` VALUES
+(1, 'Diana', 'Chan', 'dprince', 'hash001', 1);
 									
 -- 2. Add More Staff (1 new Admin, 2 new Trainers)
 INSERT INTO `group11`.`Staff` VALUES 
-(1, 'Diana', 'Prince', 'dprince', 'hash001', 'Admin', 'diana@fithub.com', 'Active'),
 (2, 'Ethan', 'Wong', 'ewong', 'hash002', 'Host', 'ethan.wong@fithub.com', 'Active'),
 (3, 'Olivia', 'Garcia', 'ogarcia', 'hash002', 'Host', 'olivia.garcia@fithub.com', 'Active'),
 (4, 'Noah', 'Patel', 'npatel', 'hash002', 'Host', 'noah.patel@fithub.com', 'Active'),
