@@ -2,7 +2,8 @@
 <%@ page import="java.sql.*" %>
 <%@ page session="true" %>
 <%
-    if (session.getAttribute("staff_id") == null) {
+    if (session.getAttribute("staff_id") == null && 
+        session.getAttribute("admin_id") == null) {
         response.sendRedirect("staff_login.jsp");
         return;
     }
@@ -28,7 +29,7 @@
 
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/group11", "root", "YoUR_PASSWORD_HERE");
+                "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
 
             PreparedStatement amountPs = conn.prepareStatement(
                 "SELECT mp.price " +

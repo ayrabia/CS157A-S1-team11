@@ -4,7 +4,8 @@
 <%
     // Staff-only page for managing member accounts.
     // Supports walk-in registration, freezing active memberships, and reactivating frozen ones.
-    if (session.getAttribute("staff_id") == null) {
+    if (session.getAttribute("staff_id") == null && 
+        session.getAttribute("admin_id") == null) {
         response.sendRedirect("staff_login.jsp");
         return;
     }

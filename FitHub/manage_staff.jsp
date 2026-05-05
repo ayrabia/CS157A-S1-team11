@@ -3,7 +3,8 @@
 <%
     String staffRole = (String) session.getAttribute("staff_role");
 
-    if (session.getAttribute("staff_id") == null) {
+    if (session.getAttribute("staff_id") == null && 
+        session.getAttribute("admin_id") == null) {
         response.sendRedirect("staff_login.jsp");
         return;
     }
@@ -30,29 +31,7 @@
             if ("add_staff".equals(action)) {
                 String role = request.getParameter("role");
 
-                // Only one admin is allowed
-                if ("Admin".equalsIgnoreCase(role)) {
-                    PreparedStatement adminPs = conn.prepareStatement(
-                        "SELECT COUNT(*) FROM Staff WHERE role = 'Admin'"
-                    );
-                    ResultSet adminRs = adminPs.executeQuery();
-                    adminRs.next();
-                    int adminCount = adminRs.getInt(1);
-                    adminRs.close();
-                    adminPs.close();
-
-                    if (adminCount >= 1) {
-                        message = "Only one admin is allowed.";
-                        messageType = "error";
-                    } else {
-                        action = "continue_add_staff";
-                    }
-                } else {
-                    action = "continue_add_staff";
-                }
-
-                if ("continue_add_staff".equals(action)) {
-                    ResultSet idRs = conn.prepareStatement(
+                ResultSet idRs = conn.prepareStatement(
                         "SELECT COALESCE(MAX(staff_id), 0) + 1 AS next_id FROM Staff"
                     ).executeQuery();
                     idRs.next();
@@ -76,62 +55,27 @@
 
                     message = "Staff account created. Staff ID: " + nextStaffId;
                     messageType = "success";
-                }
+                    response.sendRedirect("manage_staff.jsp");
+                    return;
 
             } else if ("update_staff".equals(action)) {
                 int staffId = Integer.parseInt(request.getParameter("staff_id"));
                 String role = request.getParameter("role");
 
-                if ("Admin".equalsIgnoreCase(role)) {
-                    PreparedStatement adminPs = conn.prepareStatement(
-                        "SELECT COUNT(*) FROM Staff WHERE role = 'Admin' AND staff_id <> ?"
-                    );
-                    adminPs.setInt(1, staffId);
-                    ResultSet adminRs = adminPs.executeQuery();
-                    adminRs.next();
-                    int otherAdmins = adminRs.getInt(1);
-                    adminRs.close();
-                    adminPs.close();
+                PreparedStatement updatePs = conn.prepareStatement(
+                    "UPDATE Staff SET role = ?, status = ? WHERE staff_id = ?"
+                );
 
-                    if (otherAdmins >= 1) {
-                        message = "Only one admin is allowed.";
-                        messageType = "error";
-                    } else {
-                        PreparedStatement updatePs = conn.prepareStatement(
-                            "UPDATE Staff SET first_name = ?, last_name = ?, username = ?, role = ?, email = ?, status = ? " +
-                            "WHERE staff_id = ?"
-                        );
-                        updatePs.setString(1, request.getParameter("first_name"));
-                        updatePs.setString(2, request.getParameter("last_name"));
-                        updatePs.setString(3, request.getParameter("username"));
-                        updatePs.setString(4, role);
-                        updatePs.setString(5, request.getParameter("email"));
-                        updatePs.setString(6, request.getParameter("status"));
-                        updatePs.setInt(7, staffId);
-                        updatePs.executeUpdate();
-                        updatePs.close();
+                updatePs.setString(1, role);
+                updatePs.setString(2, request.getParameter("status"));
+                updatePs.setInt(3, staffId);
+                updatePs.executeUpdate();
+                updatePs.close();
 
-                        message = "Staff account updated.";
-                        messageType = "success";
-                    }
-                } else {
-                    PreparedStatement updatePs = conn.prepareStatement(
-                        "UPDATE Staff SET first_name = ?, last_name = ?, username = ?, role = ?, email = ?, status = ? " +
-                        "WHERE staff_id = ?"
-                    );
-                    updatePs.setString(1, request.getParameter("first_name"));
-                    updatePs.setString(2, request.getParameter("last_name"));
-                    updatePs.setString(3, request.getParameter("username"));
-                    updatePs.setString(4, role);
-                    updatePs.setString(5, request.getParameter("email"));
-                    updatePs.setString(6, request.getParameter("status"));
-                    updatePs.setInt(7, staffId);
-                    updatePs.executeUpdate();
-                    updatePs.close();
-
-                    message = "Staff account updated.";
-                    messageType = "success";
-                }
+                message = "Staff account updated.";
+                messageType = "success";
+                response.sendRedirect("manage_staff.jsp");
+                return;
             }
         }
 
@@ -184,7 +128,6 @@
       <select name="role" required>
         <option value="Host">Host</option>
         <option value="Trainer">Trainer</option>
-        <option value="Admin">Admin</option>
       </select>
     </p>
 
@@ -215,21 +158,18 @@
       <td><%= staff.getInt("staff_id") %></td>
 
       <td>
-        <input type="text" name="first_name" value="<%= staff.getString("first_name") %>" required>
-        <input type="text" name="last_name" value="<%= staff.getString("last_name") %>" required>
+        <%= staff.getString("first_name") %> <%= staff.getString("last_name") %>
       </td>
 
       <td>
-        <input type="text" name="username" value="<%= staff.getString("username") %>" required>
+        <%= staff.getString("username") %>
       </td>
 
       <td>
-        <input type="email" name="email" value="<%= staff.getString("email") %>" required>
-      </td>
+        <%= staff.getString("email") %>
 
       <td>
         <select name="role" required>
-          <option value="Admin" <%= "Admin".equals(staff.getString("role")) ? "selected" : "" %>>Admin</option>
           <option value="Host" <%= "Host".equals(staff.getString("role")) ? "selected" : "" %>>Host</option>
           <option value="Trainer" <%= "Trainer".equals(staff.getString("role")) ? "selected" : "" %>>Trainer</option>
         </select>

@@ -3,35 +3,69 @@
 <%@ page session="true" %>
 <%
     String error = "";
+
     if ("POST".equalsIgnoreCase(request.getMethod())) {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
         Connection conn = null;
+
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
+                "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE"
+            );
 
-            String sql = "SELECT staff_id, first_name, role FROM Staff WHERE username = ? AND password_hash = ? AND status = 'Active'";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, username);
-            ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
+            // 1. Check Admin first
+            String adminSql =
+                "SELECT admin_id, first_name, role_id FROM Admin " +
+                "WHERE username = ? AND password_hash = ?";
 
-            if (rs.next()) {
-                session.setAttribute("staff_id", rs.getInt("staff_id"));
-                session.setAttribute("staff_name", rs.getString("first_name"));
-                session.setAttribute("staff_role", rs.getString("role"));
+            PreparedStatement adminPs = conn.prepareStatement(adminSql);
+            adminPs.setString(1, username);
+            adminPs.setString(2, password);
+
+            ResultSet adminRs = adminPs.executeQuery();
+
+            if (adminRs.next()) {
+                session.setAttribute("admin_id", adminRs.getInt("admin_id"));
+                session.setAttribute("staff_id", adminRs.getInt("admin_id")); // allow old staff page checks
+                session.setAttribute("staff_name", adminRs.getString("first_name"));
+                session.setAttribute("staff_role", "Admin");
+                session.setAttribute("role_id", adminRs.getInt("role_id"));
+
                 response.sendRedirect("staff_dashboard.jsp");
                 return;
-            } else {
-                error = "Invalid credentials or inactive account.";
             }
+
+            // 2. Check Staff second
+            String staffSql =
+                "SELECT staff_id, first_name, role FROM Staff " +
+                "WHERE username = ? AND password_hash = ? AND status = 'Active'";
+
+            PreparedStatement staffPs = conn.prepareStatement(staffSql);
+            staffPs.setString(1, username);
+            staffPs.setString(2, password);
+
+            ResultSet staffRs = staffPs.executeQuery();
+
+            if (staffRs.next()) {
+                session.setAttribute("staff_id", staffRs.getInt("staff_id"));
+                session.setAttribute("staff_name", staffRs.getString("first_name"));
+                session.setAttribute("staff_role", staffRs.getString("role"));
+
+                response.sendRedirect("staff_dashboard.jsp");
+                return;
+            }
+
+            error = "Invalid credentials or inactive account.";
+
         } catch (Exception e) {
             error = "Database error: " + e.getMessage();
         } finally {
-            if (conn != null) try { conn.close(); } catch (SQLException e) {}
+            if (conn != null) {
+                try { conn.close(); } catch (SQLException e) {}
+            }
         }
     }
 %>
