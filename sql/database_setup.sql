@@ -11,15 +11,24 @@ CREATE TABLE `group11`.`Members` (
   PRIMARY KEY (`member_id`)
 );
 
+CREATE TABLE `group11`.`Admin` (
+    `admin_id` INT AUTO_INCREMENT PRIMARY KEY,
+    `first_name` VARCHAR(50) NOT NULL,
+    `last_name` VARCHAR(50) NOT NULL,
+    `username` VARCHAR(50) NOT NULL UNIQUE,
+    `password_hash` VARCHAR(60) NULL,
+    `role_id` INT NOT NULL DEFAULT 1
+);
+
 CREATE TABLE `group11`.`Staff` (
   `staff_id` INT AUTO_INCREMENT,
   `first_name` VARCHAR(30) NULL,
   `last_name` VARCHAR(30) NULL,
   `username` VARCHAR(30) NOT NULL,
   `password_hash` VARCHAR(60) NULL,
-  `role` VARCHAR(20) NULL,
+  `role` ENUM('Trainer', 'Host') NOT NULL,
   `email` VARCHAR(60) NULL,
-  `status` VARCHAR(20) NULL,
+  `status` ENUM('Active', 'Inactive') DEFAULT 'Active',
   PRIMARY KEY (`staff_id`)
 );
 
