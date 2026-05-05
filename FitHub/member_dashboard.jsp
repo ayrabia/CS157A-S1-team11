@@ -128,6 +128,14 @@
   </div>
 
   <div class="card">
+    <h3>Attendance History</h3>
+    <div class="subtext">
+      View your gym visit history and class attendance log.
+    </div>
+    <a href="member_attendance.jsp" class="btn">View Attendance</a>
+  </div>
+
+  <div class="card">
     <h2>Find a gym</h2>
     <p class="muted">Find a gym near you.</p>
 

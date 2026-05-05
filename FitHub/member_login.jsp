@@ -62,7 +62,6 @@
     <button type="submit">Login</button>
   </form>
   <br>
-  <p>No account? <a href="register.jsp">Register here</a></p>
   <p><a href="index.html">Back</a></p>
 
 <script>
