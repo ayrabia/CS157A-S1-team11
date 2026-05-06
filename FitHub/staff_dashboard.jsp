@@ -36,6 +36,17 @@
       <a class="btn" href="checkin.jsp">Check In</a>
     </div>
     <div class="card">
+      <h3>Payment History</h3>
+      <p>View member payment records and payment statuses</p>
+      <a class="btn" href="staff_payment_history.jsp">Payments</a>
+    </div>
+
+    <div class="card">
+      <h3>Check-In Logs</h3>
+      <p>Review member gym check-in history</p>
+      <a class="btn" href="staff_checkin_logs.jsp">Check-In Logs</a>
+    </div>
+    <div class="card">
       <h3>Manage Members</h3>
       <p>Register, freeze, or reactivate member accounts</p>
       <a class="btn" href="manage_members.jsp">Members</a>
