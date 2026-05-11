@@ -16,7 +16,7 @@
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/group11", "root", "");
+                "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
 
             // Mark all memberships as Expired before deleting the member record
             String deactivateSql = "UPDATE Membership SET status = 'Expired' WHERE member_id = ?";

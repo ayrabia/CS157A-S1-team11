@@ -1,7 +1,9 @@
+<%@ include file="header.jsp" %>
 <%@ page import="java.sql.*" %>
 <%@ page session="true" %>
 <%
-    if (session.getAttribute("staff_id") == null) {
+    if (session.getAttribute("staff_id") == null && 
+        session.getAttribute("admin_id") == null) {
         response.sendRedirect("staff_login.jsp");
         return;
     }

@@ -1,3 +1,4 @@
+<%@ include file="header.jsp" %>
 <%@ page import="java.sql.*" %>
 <%@ page session="true" %>
 <%
@@ -15,7 +16,7 @@
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
         conn = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/group11", "root", "");
+            "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
 
         if ("POST".equalsIgnoreCase(request.getMethod())) {
             String action = request.getParameter("action");
@@ -168,5 +169,30 @@
         if (conn != null) try { conn.close(); } catch (SQLException ex) {}
     }
 %>
+
+<script>
+function refreshRealtimeSections() {
+    fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const newDoc = parser.parseFromString(html, "text/html");
+
+            document.querySelectorAll("[data-realtime]").forEach(section => {
+                const id = section.id;
+                const newSection = newDoc.getElementById(id);
+
+                if (newSection) {
+                    section.innerHTML = newSection.innerHTML;
+                }
+            });
+        })
+        .catch(error => console.log("Realtime update failed:", error));
+}
+
+// refresh every 5 seconds
+setInterval(refreshRealtimeSections, 5000);
+</script>
+
 </body>
 </html>

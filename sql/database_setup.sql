@@ -1,5 +1,5 @@
 CREATE TABLE `group11`.`Members` (
-  `member_id` INT NOT NULL,
+  `member_id` INT AUTO_INCREMENT,
   `phone_number` VARCHAR(16) NULL,
   `first_name` VARCHAR(30) NULL,
   `last_name` VARCHAR(30) NULL,
@@ -11,15 +11,24 @@ CREATE TABLE `group11`.`Members` (
   PRIMARY KEY (`member_id`)
 );
 
+CREATE TABLE `group11`.`Admin` (
+    `admin_id` INT AUTO_INCREMENT PRIMARY KEY,
+    `first_name` VARCHAR(50) NOT NULL,
+    `last_name` VARCHAR(50) NOT NULL,
+    `username` VARCHAR(50) NOT NULL UNIQUE,
+    `password_hash` VARCHAR(60) NULL,
+    `role_id` INT NOT NULL DEFAULT 1
+);
+
 CREATE TABLE `group11`.`Staff` (
-  `staff_id` INT NOT NULL,
+  `staff_id` INT AUTO_INCREMENT,
   `first_name` VARCHAR(30) NULL,
   `last_name` VARCHAR(30) NULL,
   `username` VARCHAR(30) NOT NULL,
   `password_hash` VARCHAR(60) NULL,
-  `role` VARCHAR(20) NULL,
+  `role` ENUM('Trainer', 'Host') NOT NULL,
   `email` VARCHAR(60) NULL,
-  `status` VARCHAR(20) NULL,
+  `status` ENUM('Active', 'Inactive') DEFAULT 'Active',
   PRIMARY KEY (`staff_id`)
 );
 
@@ -41,7 +50,7 @@ CREATE TABLE `group11`.`Membership_Plan` (
 );
 
 CREATE TABLE `group11`.`Membership` (
-  `membership_id` INT NOT NULL,
+  `membership_id` INT AUTO_INCREMENT,
   `member_id` INT NOT NULL,
   `plan_id` INT NOT NULL,
   `start_date` VARCHAR(30) NULL,
@@ -52,7 +61,7 @@ CREATE TABLE `group11`.`Membership` (
 );
 
 CREATE TABLE `group11`.`Payment` (
-  `payment_id` INT NOT NULL,
+  `payment_id` INT AUTO_INCREMENT,
   `membership_id` INT NOT NULL,
   `member_id` INT NOT NULL,
   `amount` INT NULL,
@@ -63,7 +72,7 @@ CREATE TABLE `group11`.`Payment` (
 );
 
 CREATE TABLE `group11`.`Class` (
-  `class_id` INT NOT NULL,
+  `class_id` INT AUTO_INCREMENT,
   `class_name` VARCHAR(30) NULL,
   `description` VARCHAR(60) NULL,
   `max_capacity` INT NULL,
@@ -86,7 +95,7 @@ CREATE TABLE `group11`.`Class_Enrollment` (
 );
 
 CREATE TABLE `group11`.`AttendanceLog` (
-  `attendance_id` INT NOT NULL,
+  `attendance_id` INT AUTO_INCREMENT,
   `member_id` INT NOT NULL,
   `class_id` INT NULL,
   `check_in_time` VARCHAR(30) NULL,

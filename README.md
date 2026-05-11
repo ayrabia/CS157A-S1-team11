@@ -22,6 +22,7 @@ FitHub is a web-based gym management system designed to centralize and streamlin
 
 ### Staff Features
 - Manage member accounts (create, update, freeze, reactivate)
+- Assign membership plans to members directly from the member management page
 - Create and manage membership plans (add, update, deactivate)
 - Record and track membership payments
 - Create and manage class sessions (schedule, capacity, trainer assignment)

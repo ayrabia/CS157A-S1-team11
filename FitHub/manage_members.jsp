@@ -1,9 +1,11 @@
+<%@ include file="header.jsp" %>
 <%@ page import="java.sql.*" %>
 <%@ page session="true" %>
 <%
     // Staff-only page for managing member accounts.
     // Supports walk-in registration, freezing active memberships, and reactivating frozen ones.
-    if (session.getAttribute("staff_id") == null) {
+    if (session.getAttribute("staff_id") == null && 
+        session.getAttribute("admin_id") == null) {
         response.sendRedirect("staff_login.jsp");
         return;
     }
@@ -15,29 +17,162 @@
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
         conn = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/group11", "root", "");
+            "jdbc:mysql://localhost:3306/group11", "root", "YOUR_PASSWORD_HERE");
 
         if ("POST".equalsIgnoreCase(request.getMethod())) {
             String action = request.getParameter("action");
 
             if ("freeze".equals(action)) {
-                // Freeze the member account — blocks login and check-in
-                String updateSql = "UPDATE Members SET status = 'Frozen' WHERE member_id = ? AND status = 'Active'";
-                PreparedStatement updatePs = conn.prepareStatement(updateSql);
-                updatePs.setInt(1, Integer.parseInt(request.getParameter("member_id")));
+                int memberId = Integer.parseInt(request.getParameter("member_id"));
+
+                PreparedStatement updatePs = conn.prepareStatement(
+                    "UPDATE Members SET status = 'Frozen' WHERE member_id = ? AND status = 'Active'"
+                );
+                updatePs.setInt(1, memberId);
                 int rows = updatePs.executeUpdate();
-                message = rows > 0 ? "Account frozen." : "Account is already frozen or not found.";
+                updatePs.close();
+
+                PreparedStatement membershipPs = conn.prepareStatement(
+                    "UPDATE Membership SET status = 'Frozen', freeze_flag = 'Yes' " +
+                    "WHERE membership_id = (" +
+                    "   SELECT membership_id FROM (" +
+                    "       SELECT MAX(membership_id) AS membership_id FROM Membership WHERE member_id = ?" +
+                    "   ) AS latest" +
+                    ")"
+                );
+                membershipPs.setInt(1, memberId);
+                membershipPs.executeUpdate();
+                membershipPs.close();
+
+                message = rows > 0 ? "Account and membership frozen." : "Account is already frozen or not found.";
                 messageType = rows > 0 ? "success" : "error";
 
             } else if ("reactivate".equals(action)) {
-                // Reactivate the member account — restores login and check-in access
-                String updateSql = "UPDATE Members SET status = 'Active' WHERE member_id = ? AND status = 'Frozen'";
-                PreparedStatement updatePs = conn.prepareStatement(updateSql);
-                updatePs.setInt(1, Integer.parseInt(request.getParameter("member_id")));
+                int memberId = Integer.parseInt(request.getParameter("member_id"));
+
+                PreparedStatement updatePs = conn.prepareStatement(
+                    "UPDATE Members SET status = 'Active' WHERE member_id = ? AND status = 'Frozen'"
+                );
+                updatePs.setInt(1, memberId);
                 int rows = updatePs.executeUpdate();
-                message = rows > 0 ? "Account reactivated." : "Account is already active or not found.";
+                updatePs.close();
+
+                PreparedStatement membershipPs = conn.prepareStatement(
+                    "UPDATE Membership SET status = 'Active', freeze_flag = 'No' " +
+                    "WHERE membership_id = (" +
+                    "   SELECT membership_id FROM (" +
+                    "       SELECT MAX(membership_id) AS membership_id FROM Membership WHERE member_id = ?" +
+                    "   ) AS latest" +
+                    ")"
+                );
+                membershipPs.setInt(1, memberId);
+                membershipPs.executeUpdate();
+                membershipPs.close();
+
+                message = rows > 0 ? "Account and membership reactivated." : "Account is already active or not found.";
                 messageType = rows > 0 ? "success" : "error";
 
+            } else if ("assign_membership".equals(action)) {
+                int memberId = Integer.parseInt(request.getParameter("member_id"));
+                int planId = Integer.parseInt(request.getParameter("plan_id"));
+
+                PreparedStatement planPs = conn.prepareStatement(
+                    "SELECT duration_months FROM Membership_Plan WHERE plan_id = ? AND is_active = 'Yes'"
+                );
+                planPs.setInt(1, planId);
+                ResultSet planRs = planPs.executeQuery();
+
+                if (!planRs.next()) {
+                    message = "Selected plan is not active or does not exist.";
+                    messageType = "error";
+                } else {
+                    int duration = planRs.getInt("duration_months");
+                    planRs.close();
+                    planPs.close();
+
+                    ResultSet idRs = conn.prepareStatement(
+                        "SELECT COALESCE(MAX(membership_id), 0) + 1 AS next_id FROM Membership"
+                    ).executeQuery();
+                    idRs.next();
+                    int nextMembershipId = idRs.getInt("next_id");
+                    idRs.close();
+
+                    PreparedStatement assignPs = conn.prepareStatement(
+                        "INSERT INTO Membership " +
+                        "(membership_id, member_id, plan_id, start_date, end_date, status, freeze_flag) " +
+                        "VALUES (?, ?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? MONTH), 'Pending', 'No')"
+                    );
+                    assignPs.setInt(1, nextMembershipId);
+                    assignPs.setInt(2, memberId);
+                    assignPs.setInt(3, planId);
+                    assignPs.setInt(4, duration);
+                    assignPs.executeUpdate();
+                    assignPs.close();
+
+                    response.sendRedirect("process_payment.jsp?member_id=" + memberId + "&membership_id=" + nextMembershipId);
+                    return;
+                }
+
+            } else if ("pay_membership".equals(action)) {
+
+                int memberId = Integer.parseInt(request.getParameter("member_id"));
+                int planId   = Integer.parseInt(request.getParameter("plan_id"));
+
+                PreparedStatement planPs = conn.prepareStatement(
+                    "SELECT duration_months FROM Membership_Plan WHERE plan_id = ? AND is_active = 'Yes'"
+                );
+                planPs.setInt(1, planId);
+                ResultSet planRs = planPs.executeQuery();
+
+                if (planRs.next()) {
+                    int duration = planRs.getInt("duration_months");
+
+                    // check if pending membership exists
+                    PreparedStatement checkPs = conn.prepareStatement(
+                        "SELECT membership_id FROM Membership WHERE member_id = ? AND status = 'Pending' ORDER BY membership_id DESC LIMIT 1"
+                    );
+                    checkPs.setInt(1, memberId);
+                    ResultSet checkRs = checkPs.executeQuery();
+
+                    int membershipId;
+
+                    if (checkRs.next()) {
+                        // UPDATE existing pending membership
+                        membershipId = checkRs.getInt("membership_id");
+
+                        PreparedStatement updatePs = conn.prepareStatement(
+                            "UPDATE Membership SET plan_id = ?, start_date = CURDATE(), " +
+                            "end_date = DATE_ADD(CURDATE(), INTERVAL ? MONTH) " +
+                            "WHERE membership_id = ?"
+                        );
+                        updatePs.setInt(1, planId);
+                        updatePs.setInt(2, duration);
+                        updatePs.setInt(3, membershipId);
+                        updatePs.executeUpdate();
+
+                    } else {
+                        // CREATE new pending membership (same as your assign logic)
+                        ResultSet idRs = conn.prepareStatement(
+                            "SELECT COALESCE(MAX(membership_id), 0) + 1 AS next_id FROM Membership"
+                        ).executeQuery();
+                        idRs.next();
+                        membershipId = idRs.getInt("next_id");
+
+                        PreparedStatement insertPs = conn.prepareStatement(
+                            "INSERT INTO Membership (membership_id, member_id, plan_id, start_date, end_date, status, freeze_flag) " +
+                            "VALUES (?, ?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? MONTH), 'Pending', 'No')"
+                        );
+                        insertPs.setInt(1, membershipId);
+                        insertPs.setInt(2, memberId);
+                        insertPs.setInt(3, planId);
+                        insertPs.setInt(4, duration);
+                        insertPs.executeUpdate();
+                    }
+
+                    // redirect to payment page
+                    response.sendRedirect("process_payment.jsp?member_id=" + memberId + "&membership_id=" + membershipId);
+                    return;
+                }
             } else if ("walkin".equals(action)) {
                 // Walk-in registration: staff creates a member account on the spot
                 String username = request.getParameter("username");
@@ -80,12 +215,25 @@
         // Load all members joined with their most recent membership status
         ResultSet members = conn.prepareStatement(
             "SELECT m.member_id, m.first_name, m.last_name, m.email, m.status AS account_status, " +
+            "ms.membership_id, " +
             "COALESCE(ms.status, 'No Membership') AS membership_status " +
             "FROM Members m " +
             "LEFT JOIN Membership ms ON m.member_id = ms.member_id " +
             "   AND ms.membership_id = (SELECT MAX(membership_id) FROM Membership WHERE member_id = m.member_id) " +
             "ORDER BY m.member_id"
         ).executeQuery();
+
+        // Load active plans for the assign membership dropdown
+        ResultSet plans = conn.prepareStatement(
+            "SELECT plan_id, plan_name, price, duration_months FROM Membership_Plan WHERE is_active = 'Yes' ORDER BY plan_name"
+        ).executeQuery();
+        java.util.List<int[]> planIds = new java.util.ArrayList<>();
+        java.util.List<String> planLabels = new java.util.ArrayList<>();
+        while (plans.next()) {
+            planIds.add(new int[]{ plans.getInt("plan_id") });
+            planLabels.add(plans.getString("plan_name") + " ($" + plans.getInt("price") + " / " + plans.getInt("duration_months") + " mo)");
+        }
+        plans.close();
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -143,6 +291,7 @@
             String email          = members.getString("email");
             String accountStatus  = members.getString("account_status");
             String membershipStatus = members.getString("membership_status");
+            int membershipId = members.getInt("membership_id");
             boolean isActive  = "Active".equals(accountStatus);
             boolean isFrozen  = "Frozen".equals(accountStatus);
             String msClass    = "Active".equals(membershipStatus) ? "ms-active" : "Frozen".equals(membershipStatus) ? "ms-frozen" : "ms-none";
@@ -154,21 +303,71 @@
       <td><%= accountStatus %></td>
       <td class="<%= msClass %>"><%= membershipStatus %></td>
       <td>
-        <% if (isActive) { %>
-          <form class="inline" method="post">
-            <input type="hidden" name="action"    value="freeze">
-            <input type="hidden" name="member_id" value="<%= memberId %>">
-            <button class="btn-red" type="submit">Freeze</button>
-          </form>
+        <% if ("Pending".equalsIgnoreCase(membershipStatus)) { %>
+
+            <!-- PAY NOW BUTTON -->
+            <form class="inline" method="post" style="margin-top:6px; display:block;">
+                <input type="hidden" name="action" value="pay_membership">
+                <input type="hidden" name="member_id" value="<%= memberId %>">
+                <input type="hidden" name="membership_id" value="<%= membershipId %>">
+
+                <select name="plan_id" style="padding:4px; border-radius:4px;">
+                    <% for (int i = 0; i < planIds.size(); i++) { %>
+                        <option value="<%= planIds.get(i)[0] %>">
+                            <%= planLabels.get(i) %>
+                        </option>
+                    <% } %>
+                </select>
+
+                <button class="btn-yellow" type="submit" style="margin-top:4px;">
+                    <%= "Pending".equalsIgnoreCase(membershipStatus) ? "Pay Now" : "Pay" %>
+                </button>
+            </form>
+
+        <% } else if (isActive) { %>
+
+            <form class="inline" method="post">
+                <input type="hidden" name="action" value="freeze">
+                <input type="hidden" name="member_id" value="<%= memberId %>">
+                <button class="btn-red" type="submit">Freeze</button>
+            </form>
+
         <% } else if (isFrozen) { %>
-          <form class="inline" method="post">
-            <input type="hidden" name="action"    value="reactivate">
-            <input type="hidden" name="member_id" value="<%= memberId %>">
-            <button class="btn-green" type="submit">Reactivate</button>
-          </form>
+
+            <form class="inline" method="post">
+                <input type="hidden" name="action" value="reactivate">
+                <input type="hidden" name="member_id" value="<%= memberId %>">
+                <button class="btn-green" type="submit">Reactivate</button>
+            </form>
+
         <% } else { %>
-          <span class="ms-none">—</span>
+
+            <span class="ms-none">—</span>
+
         <% } %>
+
+        <% if ("No Membership".equals(membershipStatus)) { %>
+
+            <!-- Assign Membership -->
+            <form class="inline" method="post" style="margin-top:6px; display:block;">
+                <input type="hidden" name="action" value="assign_membership">
+                <input type="hidden" name="member_id" value="<%= memberId %>">
+
+                <select name="plan_id" style="padding:4px; border-radius:4px;">
+                    <% for (int i = 0; i < planIds.size(); i++) { %>
+                        <option value="<%= planIds.get(i)[0] %>">
+                            <%= planLabels.get(i) %>
+                        </option>
+                    <% } %>
+                </select>
+
+                <button class="btn-yellow" type="submit" style="margin-top:4px;">
+                    Pay
+                </button>
+            </form>
+
+        <% } %>
+
       </td>
     </tr>
     <% } %>
@@ -185,5 +384,30 @@
         if (conn != null) try { conn.close(); } catch (SQLException ex) {}
     }
 %>
+
+<script>
+function refreshRealtimeSections() {
+    fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const newDoc = parser.parseFromString(html, "text/html");
+
+            document.querySelectorAll("[data-realtime]").forEach(section => {
+                const id = section.id;
+                const newSection = newDoc.getElementById(id);
+
+                if (newSection) {
+                    section.innerHTML = newSection.innerHTML;
+                }
+            });
+        })
+        .catch(error => console.log("Realtime update failed:", error));
+}
+
+// refresh every 5 seconds
+setInterval(refreshRealtimeSections, 5000);
+</script>
+
 </body>
 </html>
