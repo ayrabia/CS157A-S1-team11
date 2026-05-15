@@ -18,7 +18,7 @@
 
             // 1. Check Admin first
             String adminSql =
-                "SELECT admin_id, first_name, role_id FROM Admin " +
+                "SELECT admin_id, first_name FROM Admin " +
                 "WHERE username = ? AND password_hash = ?";
 
             PreparedStatement adminPs = conn.prepareStatement(adminSql);
@@ -32,7 +32,6 @@
                 session.setAttribute("staff_id", adminRs.getInt("admin_id")); // allow old staff page checks
                 session.setAttribute("staff_name", adminRs.getString("first_name"));
                 session.setAttribute("staff_role", "Admin");
-                session.setAttribute("role_id", adminRs.getInt("role_id"));
 
                 response.sendRedirect("staff_dashboard.jsp");
                 return;

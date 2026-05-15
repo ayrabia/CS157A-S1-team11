@@ -19,8 +19,7 @@ CREATE TABLE `group11`.`Admin` (
     `first_name` VARCHAR(50) NOT NULL,
     `last_name` VARCHAR(50) NOT NULL,
     `username` VARCHAR(50) NOT NULL UNIQUE,
-    `password_hash` VARCHAR(60) NULL,
-    `role_id` INT NOT NULL DEFAULT 1
+    `password_hash` VARCHAR(60) NULL
 );
 
 CREATE TABLE `group11`.`Staff` (
@@ -83,6 +82,7 @@ CREATE TABLE `group11`.`Class` (
   `start_time` VARCHAR(30) NULL,
   `end_time` VARCHAR(30) NULL,
   `staff_id` INT NOT NULL,
+  `gym_name` VARCHAR(30) NULL,
   `status` VARCHAR(20) NULL,
   PRIMARY KEY (`class_id`)
 );

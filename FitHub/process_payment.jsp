@@ -100,11 +100,21 @@
 
             // Activate membership only after payment is recorded
             ps = conn.prepareStatement(
-                "UPDATE Membership SET status = 'Active' WHERE membership_id = ? AND member_id = ?"
+                "UPDATE Membership SET status = 'Active', freeze_flag = 'No' " +
+                "WHERE membership_id = ? AND member_id = ?"
             );
             ps.setInt(1, membershipId);
             ps.setInt(2, memberId);
             ps.executeUpdate();
+            ps.close();
+
+            // Also reactivate the member account after payment
+            ps = conn.prepareStatement(
+                "UPDATE Members SET status = 'Active' WHERE member_id = ?"
+            );
+            ps.setInt(1, memberId);
+            ps.executeUpdate();
+            ps.close();
 
             conn.commit();
 
