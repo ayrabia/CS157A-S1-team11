@@ -1,3 +1,0 @@
-DROP DATABASE group11;
-CREATE DATABASE group11;
-USE group11;
