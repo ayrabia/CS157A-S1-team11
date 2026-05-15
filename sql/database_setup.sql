@@ -19,8 +19,7 @@ CREATE TABLE `group11`.`Admin` (
     `first_name` VARCHAR(50) NOT NULL,
     `last_name` VARCHAR(50) NOT NULL,
     `username` VARCHAR(50) NOT NULL UNIQUE,
-    `password_hash` VARCHAR(60) NULL,
-    `role_id` INT NOT NULL DEFAULT 1
+    `password_hash` VARCHAR(60) NULL
 );
 
 CREATE TABLE `group11`.`Staff` (

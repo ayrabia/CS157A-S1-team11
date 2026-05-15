@@ -20,16 +20,16 @@ INSERT INTO `group11`.`Gym` VALUES
 -- Admin (10 rows)  role_id: 1 = Super Admin, 2 = Manager
 -- --------------------------------------------------------
 INSERT INTO `group11`.`Admin` VALUES
-(1,  'Diana',   'Chan',    'dchan',     'hash001', 1),
-(2,  'Alex',    'Kim',     'akim',      'hash002', 1),
-(3,  'Morgan',  'Lee',     'mlee',      'hash003', 2),
-(4,  'Jordan',  'Park',    'jpark',     'hash004', 2),
-(5,  'Taylor',  'Chen',    'tchen',     'hash005', 2),
-(6,  'Casey',   'Wong',    'cwong',     'hash006', 2),
-(7,  'Riley',   'Singh',   'rsingh',    'hash007', 2),
-(8,  'Quinn',   'Patel',   'qpatel',    'hash008', 2),
-(9,  'Sam',     'Garcia',  'sgarcia',   'hash009', 2),
-(10, 'Drew',    'Lopez',   'dlopez',    'hash010', 2);
+(1,  'Diana',   'Chan',    'dchan',     'hash001'),
+(2,  'Alex',    'Kim',     'akim',      'hash002'),
+(3,  'Morgan',  'Lee',     'mlee',      'hash003'),
+(4,  'Jordan',  'Park',    'jpark',     'hash004'),
+(5,  'Taylor',  'Chen',    'tchen',     'hash005'),
+(6,  'Casey',   'Wong',    'cwong',     'hash006'),
+(7,  'Riley',   'Singh',   'rsingh',    'hash007'),
+(8,  'Quinn',   'Patel',   'qpatel',    'hash008'),
+(9,  'Sam',     'Garcia',  'sgarcia',   'hash009'),
+(10, 'Drew',    'Lopez',   'dlopez',    'hash010');
 
 -- --------------------------------------------------------
 -- Staff (13 rows: 3 Hosts + 10 Trainers)
