@@ -128,16 +128,16 @@ INSERT INTO `group11`.`Payment` VALUES
 -- Class (10 rows)
 -- --------------------------------------------------------
 INSERT INTO `group11`.`Class` VALUES
-(201, 'Morning Yoga',  'Gentle morning stretch',              20, '2026-01-20', '07:00', '08:00', 4,  'FitHub Downtown',       'Completed'),
-(202, 'Spin Cycle',    'High-energy cycling session',         15, '2026-02-10', '09:00', '10:00', 13, 'FitHub Northside',      'Completed'),
-(203, 'HIIT Blast',    'High intensity interval training',    20, '2026-03-22', '12:00', '13:00', 5,  'FitHub Eastside',       'Scheduled'),
-(204, 'Kickboxing',    'Cardio kickboxing',                   15, '2026-03-23', '18:00', '19:00', 8,  'FitHub Midtown',        'Scheduled'),
-(205, 'Evening Yoga',  'Wind down stretch',                   25, '2026-03-24', '20:00', '21:00', 4,  'FitHub Silicon Valley', 'Scheduled'),
-(206, 'Powerlifting',  'Advanced lifting techniques',         10, NULL,         NULL,    NULL,    12, 'FitHub Central',        'Unscheduled'),
-(207, 'Martial Arts',  'Comprehensive full-body workout',     20, '2026-05-25', '16:00', '17:30', 7,  'FitHub Bay Area',       'Scheduled'),
-(208, 'Pilates',       'Core strength and flexibility',       12, '2026-05-28', '10:00', '11:00', 9,  'FitHub Westside',       'Scheduled'),
-(209, 'Zumba',         'Dance fitness class',                 30, '2026-06-01', '18:00', '19:00', 10, 'FitHub Express',        'Scheduled'),
-(210, 'Swimming',      'Lap swimming session',                8,  '2026-06-05', '07:00', '08:30', 11, 'FitHub Saratoga',       'Scheduled');
+(201, 'Morning Yoga',  'Gentle morning stretch',              20, '2026-01-20', '07:00', '08:00', 4,  'Completed'),
+(202, 'Spin Cycle',    'High-energy cycling session',         15, '2026-02-10', '09:00', '10:00', 13, 'Completed'),
+(203, 'HIIT Blast',    'High intensity interval training',    20, '2026-03-22', '12:00', '13:00', 5,  'Scheduled'),
+(204, 'Kickboxing',    'Cardio kickboxing',                   15, '2026-03-23', '18:00', '19:00', 8,  'Scheduled'),
+(205, 'Evening Yoga',  'Wind down stretch',                   25, '2026-03-24', '20:00', '21:00', 4,  'Scheduled'),
+(206, 'Powerlifting',  'Advanced lifting techniques',         10, NULL,         NULL,    NULL,    12, 'Unscheduled'),
+(207, 'Martial Arts',  'Comprehensive full-body workout',     20, '2026-05-25', '16:00', '17:30', 7,  'Scheduled'),
+(208, 'Pilates',       'Core strength and flexibility',       12, '2026-05-28', '10:00', '11:00', 9,  'Scheduled'),
+(209, 'Zumba',         'Dance fitness class',                 30, '2026-06-01', '18:00', '19:00', 10, 'Scheduled'),
+(210, 'Swimming',      'Lap swimming session',                8,  '2026-06-05', '07:00', '08:30', 11, 'Scheduled');
 
 -- --------------------------------------------------------
 -- Class_Enrollment (10 rows)
