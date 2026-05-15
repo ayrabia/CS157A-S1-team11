@@ -303,7 +303,8 @@
       <td><%= accountStatus %></td>
       <td class="<%= msClass %>"><%= membershipStatus %></td>
       <td>
-        <% if ("Pending".equalsIgnoreCase(membershipStatus)) { %>
+        <% if ("Pending".equalsIgnoreCase(membershipStatus) || 
+        ("Expired".equalsIgnoreCase(membershipStatus))) { %>
 
             <!-- PAY NOW BUTTON -->
             <form class="inline" method="post" style="margin-top:6px; display:block;">
