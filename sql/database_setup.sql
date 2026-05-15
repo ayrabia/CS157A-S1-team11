@@ -80,6 +80,7 @@ CREATE TABLE `group11`.`Class` (
   `start_time` VARCHAR(30) NULL,
   `end_time` VARCHAR(30) NULL,
   `staff_id` INT NOT NULL,
+  `gym_name` VARCHAR(30) NULL,
   `status` VARCHAR(20) NULL,
   PRIMARY KEY (`class_id`)
 );
