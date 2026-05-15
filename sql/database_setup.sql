@@ -1,3 +1,6 @@
+DROP DATABASE IF EXISTS group11;
+CREATE DATABASE group11;
+USE group11;
 CREATE TABLE `group11`.`Members` (
   `member_id` INT AUTO_INCREMENT,
   `phone_number` VARCHAR(16) NULL,
