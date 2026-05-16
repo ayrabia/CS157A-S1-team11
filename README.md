@@ -1,6 +1,6 @@
-# FitHub -- Gym Management System
+# FitHub - Gym Management System
 
-**CS157A -- Group 11**
+**CS157A - Group 11**
 Ayman Rabia, Rachel Tran, Minh Trinh
 San Jose State University
 
