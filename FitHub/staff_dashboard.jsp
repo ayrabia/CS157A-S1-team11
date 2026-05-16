@@ -1,3 +1,6 @@
+<%--
+  Contributions: Ayman Rabia 45%, Rachel Tran 35%, Minh Trinh 20%
+--%>
 <%@ include file="header.jsp" %>
 <%@ page session="true" %>
 <%

@@ -1,3 +1,6 @@
+<%--
+  Contributions: Ayman Rabia 100%
+--%>
 <%@ page import="java.sql.*" %>
 <%@ page session="true" %>
 <%

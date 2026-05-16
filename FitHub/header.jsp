@@ -1,3 +1,6 @@
+<%--
+  Contributions: Minh Trinh 100%
+--%>
 <div class="header">
     <h1>FitHub</h1>
 </div>

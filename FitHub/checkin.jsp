@@ -1,3 +1,6 @@
+<%--
+  Contributions: Ayman Rabia 90%, Minh Trinh 10%
+--%>
 <%@ include file="header.jsp" %>
 <%@ page import="java.sql.*" %>
 <%@ page session="true" %>
