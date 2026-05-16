@@ -189,24 +189,37 @@
                     message = "Username or email already exists.";
                     messageType = "error";
                 } else {
-                    // Generate next member_id since the table has no AUTO_INCREMENT
-                    ResultSet idRs = conn.prepareStatement(
-                        "SELECT COALESCE(MAX(member_id), 0) + 1 AS next_id FROM Members"
-                    ).executeQuery();
-                    idRs.next();
-                    int nextId = idRs.getInt("next_id");
+                    String insertSql =
+                        "INSERT INTO Members " +
+                        "(phone_number, first_name, last_name, username, email, password_hash, date_joined, status) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, CURDATE(), 'Active')";
 
-                    String insertSql = "INSERT INTO Members (member_id, phone_number, first_name, last_name, username, email, password_hash, date_joined, status) VALUES (?, ?, ?, ?, ?, ?, ?, CURDATE(), 'Active')";
-                    PreparedStatement insertPs = conn.prepareStatement(insertSql);
-                    insertPs.setInt(1, nextId);
-                    insertPs.setString(2, request.getParameter("phone"));
-                    insertPs.setString(3, request.getParameter("first_name"));
-                    insertPs.setString(4, request.getParameter("last_name"));
-                    insertPs.setString(5, username);
-                    insertPs.setString(6, email);
-                    insertPs.setString(7, request.getParameter("password"));
+                    PreparedStatement insertPs = conn.prepareStatement(
+                        insertSql,
+                        Statement.RETURN_GENERATED_KEYS
+                    );
+
+                    insertPs.setString(1, request.getParameter("phone"));
+                    insertPs.setString(2, request.getParameter("first_name"));
+                    insertPs.setString(3, request.getParameter("last_name"));
+                    insertPs.setString(4, username);
+                    insertPs.setString(5, email);
+                    insertPs.setString(6, request.getParameter("password"));
+
                     insertPs.executeUpdate();
-                    message = "Walk-in member registered. Member ID: " + nextId;
+
+                    ResultSet generatedKeys = insertPs.getGeneratedKeys();
+
+                    int newMemberId = 0;
+
+                    if (generatedKeys.next()) {
+                        newMemberId = generatedKeys.getInt(1);
+                    }
+
+                    generatedKeys.close();
+                    insertPs.close();
+
+                    message = "Walk-in member registered. Member ID: " + newMemberId;
                     messageType = "success";
                 }
             }
